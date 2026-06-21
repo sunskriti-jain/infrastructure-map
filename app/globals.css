@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #__next {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: #0a0f1e;
+}
+
+/* Leaflet overrides */
+.leaflet-container {
+  background: #0a0f1e;
+}
+
+.leaflet-control-attribution {
+  background: rgba(10, 15, 30, 0.7) !important;
+  color: #64748b !important;
+  font-size: 10px;
+}
+
+.leaflet-control-attribution a {
+  color: #94a3b8 !important;
+}
+
+.leaflet-control-zoom a {
+  background: #1e293b !important;
+  color: #e2e8f0 !important;
+  border-color: #334155 !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: #334155 !important;
+}
+
+/* Cluster icons */
+.custom-cluster {
+  background: rgba(15, 23, 42, 0.9);
+  border: 2px solid #3b82f6;
+  border-radius: 50%;
+  color: #e2e8f0;
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
+}
+
+/* Plant marker */
+.plant-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.92);
+  border: 2px solid rgba(59, 130, 246, 0.6);
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.plant-marker:hover {
+  transform: scale(1.15);
+  border-color: rgba(59, 130, 246, 1);
+  box-shadow: 0 0 16px rgba(59, 130, 246, 0.6);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0f172a; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+
+/* AI assistant messages */
+.chat-messages {
+  scrollbar-width: thin;
+  scrollbar-color: #334155 #0f172a;
+}
