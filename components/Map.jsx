@@ -4,21 +4,44 @@ import PLANTS, { FUEL_COLORS } from "../data/plants";
 
 let L;
 
-function getIcon(fuel) {
+function getIcon(fuel, theme) {
   const color = FUEL_COLORS[fuel] || FUEL_COLORS.other;
+  const fill = theme === "light" ? "#ffffff" : "#0f172a";
+  const stroke = theme === "light" ? "rgba(59,130,246,0.55)" : "rgba(59,130,246,0.7)";
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
-    <circle cx="16" cy="16" r="14" fill="#0f172a" stroke="rgba(59,130,246,0.7)" stroke-width="1.5"/>
+    <circle cx="16" cy="16" r="14" fill="${fill}" stroke="${stroke}" stroke-width="1.5"/>
     <path d="M18 4 L10 17 H16 L14 28 L22 15 H16 Z" fill="${color}" stroke="none"/>
   </svg>`;
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
-export default function Map({ activeFuels, onSelectPlant, selectedPlant, searchQuery }) {
+function tileConfig(theme) {
+  return {
+    url: `https://{s}.basemaps.cartocdn.com/${theme === "light" ? "light_all" : "dark_all"}/{z}/{x}/{y}{r}.png`,
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a> · Plants: EIA-860',
+    subdomains: "abcd",
+    maxZoom: 20,
+  };
+}
+
+function markerIcon(fuel, theme) {
+  return L.icon({
+    iconUrl: getIcon(fuel, theme),
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
+    popupAnchor: [0, -15],
+  });
+}
+
+export default function Map({ activeFuels, onSelectPlant, selectedPlant, searchQuery, theme = "dark" }) {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markersRef = useRef({});
   const layerGroupRef = useRef(null);
+  const tileLayerRef = useRef(null);
   const initialized = useRef(false);
+  const themeRef = useRef(theme);
 
   useEffect(() => {
     if (initialized.current) return;
@@ -34,32 +57,21 @@ export default function Map({ activeFuels, onSelectPlant, selectedPlant, searchQ
         attributionControl: true,
       });
 
-      L.tileLayer(
-        "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-        {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a> · Plants: EIA-860',
-          subdomains: "abcd",
-          maxZoom: 20,
-        }
-      ).addTo(map);
+      const { url, ...tileOptions } = tileConfig(themeRef.current);
+      tileLayerRef.current = L.tileLayer(url, tileOptions).addTo(map);
 
       L.control.zoom({ position: "topright" }).addTo(map);
 
       const layerGroup = L.layerGroup().addTo(map);
 
       PLANTS.forEach((plant) => {
-        const icon = L.icon({
-          iconUrl: getIcon(plant.fuel),
-          iconSize: [30, 30],
-          iconAnchor: [15, 15],
-          popupAnchor: [0, -15],
+        const marker = L.marker([plant.lat, plant.lng], {
+          icon: markerIcon(plant.fuel, themeRef.current),
         });
-
-        const marker = L.marker([plant.lat, plant.lng], { icon });
         marker.on("click", () => onSelectPlant(plant));
         marker.bindTooltip(
           `<strong>${plant.name}</strong><br/>${plant.capacityMW.toLocaleString()} MW`,
-          { className: "leaflet-tooltip-dark", direction: "top" }
+          { className: "leaflet-tooltip-theme", direction: "top" }
         );
 
         marker._plantData = plant;
@@ -115,22 +127,21 @@ export default function Map({ activeFuels, onSelectPlant, selectedPlant, searchQ
     }
   }, [searchQuery]);
 
-  return (
-    <>
-      <style>{`
-        .leaflet-tooltip-dark {
-          background: #1e293b;
-          border: 1px solid #334155;
-          color: #e2e8f0;
-          font-size: 12px;
-          border-radius: 6px;
-          padding: 4px 8px;
-        }
-        .leaflet-tooltip-dark::before {
-          border-top-color: #334155;
-        }
-      `}</style>
-      <div ref={mapRef} className="absolute inset-0 z-0" />
-    </>
-  );
+  // Swap basemap tiles and marker icons when the theme changes
+  useEffect(() => {
+    themeRef.current = theme;
+    if (!mapInstanceRef.current || !L) return;
+
+    const map = mapInstanceRef.current;
+    if (tileLayerRef.current) map.removeLayer(tileLayerRef.current);
+    const { url, ...tileOptions } = tileConfig(theme);
+    tileLayerRef.current = L.tileLayer(url, tileOptions).addTo(map);
+    tileLayerRef.current.bringToBack();
+
+    Object.values(markersRef.current).forEach((marker) => {
+      marker.setIcon(markerIcon(marker._plantData.fuel, theme));
+    });
+  }, [theme]);
+
+  return <div ref={mapRef} className="absolute inset-0 z-0" />;
 }

@@ -87,20 +87,20 @@ export default function AIAssistant({ selectedPlant }) {
     <div className="absolute bottom-6 right-4 z-30 flex flex-col items-end gap-2">
       {/* Chat window */}
       {open && (
-        <div className="w-80 bg-[#0f172a] border border-[#1e293b] rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+        <div className="w-80 bg-[var(--bg-panel)] border border-[var(--border)] rounded-2xl shadow-2xl flex flex-col overflow-hidden"
           style={{ height: "420px" }}>
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[#1e293b] bg-[#0a0f1e]">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)] bg-[var(--bg-panel-alt)]">
             <div className="flex items-center gap-2">
               <span className="text-lg">⚡</span>
               <div>
-                <p className="text-white font-semibold text-sm leading-none">Ohm</p>
-                <p className="text-slate-500 text-xs">Grid AI Assistant</p>
+                <p className="text-[var(--text-primary)] font-semibold text-sm leading-none">Ohm</p>
+                <p className="text-[var(--text-faint)] text-xs">Grid AI Assistant</p>
               </div>
             </div>
             <button
               onClick={() => setOpen(false)}
-              className="text-slate-400 hover:text-white text-xl"
+              className="text-[var(--text-muted)] hover:text-[var(--text-primary)] text-xl"
             >
               ×
             </button>
@@ -114,7 +114,7 @@ export default function AIAssistant({ selectedPlant }) {
                   className={`max-w-[85%] rounded-xl px-3 py-2 text-sm leading-relaxed ${
                     m.role === "user"
                       ? "bg-blue-600 text-white rounded-br-none"
-                      : "bg-[#1e293b] text-slate-200 rounded-bl-none"
+                      : "bg-[var(--chat-bubble-assistant)] text-[var(--chat-bubble-assistant-text)] rounded-bl-none"
                   }`}
                 >
                   {m.content}
@@ -123,11 +123,11 @@ export default function AIAssistant({ selectedPlant }) {
             ))}
             {loading && (
               <div className="flex justify-start">
-                <div className="bg-[#1e293b] rounded-xl rounded-bl-none px-3 py-2">
+                <div className="bg-[var(--chat-bubble-assistant)] rounded-xl rounded-bl-none px-3 py-2">
                   <span className="inline-flex gap-1">
-                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                    <span className="w-1.5 h-1.5 bg-[var(--text-muted)] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                    <span className="w-1.5 h-1.5 bg-[var(--text-muted)] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                    <span className="w-1.5 h-1.5 bg-[var(--text-muted)] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                   </span>
                 </div>
               </div>
@@ -142,7 +142,7 @@ export default function AIAssistant({ selectedPlant }) {
                 <button
                   key={s}
                   onClick={() => sendMessage(s)}
-                  className="text-xs bg-[#1e293b] hover:bg-[#334155] text-slate-300 rounded-full px-2 py-1 transition-colors text-left"
+                  className="text-xs bg-[var(--bg-hover)] hover:bg-[var(--bg-hover-strong)] text-[var(--text-secondary)] rounded-full px-2 py-1 transition-colors text-left"
                 >
                   {s}
                 </button>
@@ -151,7 +151,7 @@ export default function AIAssistant({ selectedPlant }) {
           )}
 
           {/* Input */}
-          <div className="border-t border-[#1e293b] p-3 flex gap-2">
+          <div className="border-t border-[var(--border)] p-3 flex gap-2">
             <input
               ref={inputRef}
               type="text"
@@ -159,7 +159,7 @@ export default function AIAssistant({ selectedPlant }) {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && sendMessage()}
               placeholder="Ask about the grid..."
-              className="flex-1 bg-[#1e293b] text-slate-200 placeholder-slate-500 rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-blue-500"
+              className="flex-1 bg-[var(--bg-hover)] text-[var(--text-primary)] placeholder-[var(--text-faint)] rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-blue-500"
             />
             <button
               onClick={() => sendMessage()}
