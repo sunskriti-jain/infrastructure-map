@@ -2,6 +2,8 @@
 
 An interactive map of US power plants, transmission infrastructure, and energy data — built for students and citizens who want to understand the grid without paywalls.
 
+**Live demo:** [infrastructure-map-seven.vercel.app](https://infrastructure-map-seven.vercel.app/)
+
 ## Features
 
 - **150+ power plants** mapped across all fuel types (nuclear, coal, gas, solar, wind, hydro, geothermal)
@@ -15,7 +17,7 @@ An interactive map of US power plants, transmission infrastructure, and energy d
 
 1. **Clone & install**
    ```bash
-   git clone https://github.com/sunskritijain-droid/infrastructure-map
+   git clone https://github.com/sunskriti-jain/infrastructure-map
    cd infrastructure-map
    npm install
    ```
@@ -35,7 +37,7 @@ An interactive map of US power plants, transmission infrastructure, and energy d
 
 ## Deploy on Vercel (free)
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/sunskritijain-droid/infrastructure-map)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/sunskriti-jain/infrastructure-map)
 
 Add `ANTHROPIC_API_KEY` as an environment variable in your Vercel project settings.
 
@@ -49,3 +51,7 @@ Add `ANTHROPIC_API_KEY` as an environment variable in your Vercel project settin
 ## Why this exists
 
 US energy data is publicly available but scattered across FERC, EIA, and utility-specific portals — often behind clunky interfaces. This tool puts it all on one map so anyone can explore the infrastructure that powers their life.
+
+## Author
+
+Built by **Sunskriti Jain** — [github.com/sunskriti-jain](https://github.com/sunskriti-jain)
