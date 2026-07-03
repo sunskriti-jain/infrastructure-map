@@ -19,10 +19,24 @@ function tileConfig(theme) {
   return {
     url: `https://{s}.basemaps.cartocdn.com/${theme === "light" ? "light_all" : "dark_all"}/{z}/{x}/{y}{r}.png`,
     attribution:
-      '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a> · Plants: EIA-860',
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a> · Plants: EIA-860 · Transmission: HIFLD',
     subdomains: "abcd",
     maxZoom: 20,
   };
+}
+
+function transmissionStyle(feature) {
+  const voltage = feature.properties?.VOLTAGE || 0;
+  if (voltage >= 345) return { color: "#60a5fa", weight: 3, opacity: 0.85 };
+  if (voltage >= 100) return { color: "#38bdf8", weight: 2, opacity: 0.75 };
+  return { color: "#7dd3fc", weight: 1.2, opacity: 0.55 };
+}
+
+function transmissionTooltip(feature) {
+  const p = feature.properties || {};
+  const voltage = p.VOLTAGE > 0 ? `${p.VOLTAGE.toLocaleString()} kV` : "Voltage unknown";
+  const route = p.SUB_1 && p.SUB_2 && p.SUB_1 !== "NOT AVAILABLE" ? `${p.SUB_1} ↔ ${p.SUB_2}` : null;
+  return `<strong>${voltage}</strong>${route ? `<br/>${route}` : ""}`;
 }
 
 function markerIcon(fuel, theme) {
@@ -40,6 +54,8 @@ export default function Map({ activeFuels, onSelectPlant, selectedPlant, searchQ
   const markersRef = useRef({});
   const layerGroupRef = useRef(null);
   const tileLayerRef = useRef(null);
+  const transmissionLayerRef = useRef(null);
+  const transmissionRequestRef = useRef(null);
   const initialized = useRef(false);
   const themeRef = useRef(theme);
 
@@ -110,6 +126,49 @@ export default function Map({ activeFuels, onSelectPlant, selectedPlant, searchQ
       animate: true,
       duration: 1.2,
     });
+  }, [selectedPlant]);
+
+  // Show nearby transmission lines for the selected plant
+  useEffect(() => {
+    if (!mapInstanceRef.current || !L) return;
+    const map = mapInstanceRef.current;
+
+    if (transmissionLayerRef.current) {
+      map.removeLayer(transmissionLayerRef.current);
+      transmissionLayerRef.current = null;
+    }
+    transmissionRequestRef.current?.abort();
+
+    if (!selectedPlant) return;
+
+    const controller = new AbortController();
+    transmissionRequestRef.current = controller;
+
+    fetch(`/api/transmission?lat=${selectedPlant.lat}&lng=${selectedPlant.lng}`, {
+      signal: controller.signal,
+    })
+      .then((res) => res.json())
+      .then((geojson) => {
+        if (controller.signal.aborted || !geojson?.features) return;
+        const layer = L.geoJSON(geojson, {
+          style: transmissionStyle,
+          onEachFeature: (feature, lyr) => {
+            lyr.bindTooltip(transmissionTooltip(feature), {
+              className: "leaflet-tooltip-theme",
+              sticky: true,
+            });
+          },
+        });
+        layer.addTo(map);
+        layer.bringToBack();
+        tileLayerRef.current?.bringToBack();
+        transmissionLayerRef.current = layer;
+      })
+      .catch((err) => {
+        if (err.name !== "AbortError") console.error("Failed to load transmission lines", err);
+      });
+
+    return () => controller.abort();
   }, [selectedPlant]);
 
   // Search fly-to
