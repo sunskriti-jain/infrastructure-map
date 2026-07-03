@@ -1,23 +1,14 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import PLANTS, { FUEL_COLORS } from "../data/plants";
 
-// Leaflet must be imported client-side only
 let L;
 
-function getIcon(fuel, size = 32) {
+function getIcon(fuel) {
   const color = FUEL_COLORS[fuel] || FUEL_COLORS.other;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 32 32">
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
     <circle cx="16" cy="16" r="14" fill="#0f172a" stroke="rgba(59,130,246,0.7)" stroke-width="1.5"/>
     <path d="M18 4 L10 17 H16 L14 28 L22 15 H16 Z" fill="${color}" stroke="none"/>
-  </svg>`;
-  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
-}
-
-function clusterIcon(count) {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
-    <circle cx="20" cy="20" r="18" fill="#0f172a" stroke="rgba(59,130,246,0.8)" stroke-width="2"/>
-    <text x="20" y="25" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="#e2e8f0">${count > 999 ? "999+" : count}</text>
   </svg>`;
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
@@ -26,17 +17,15 @@ export default function Map({ activeFuels, onSelectPlant, selectedPlant, searchQ
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markersRef = useRef({});
-  const clusterGroupRef = useRef(null);
+  const layerGroupRef = useRef(null);
   const initialized = useRef(false);
 
-  // Initialize map
   useEffect(() => {
     if (initialized.current) return;
     initialized.current = true;
 
     (async () => {
       L = (await import("leaflet")).default;
-      await import("leaflet.markercluster");
 
       const map = L.map(mapRef.current, {
         center: [38.5, -96],
@@ -45,7 +34,6 @@ export default function Map({ activeFuels, onSelectPlant, selectedPlant, searchQ
         attributionControl: true,
       });
 
-      // Dark basemap
       L.tileLayer(
         "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
         {
@@ -57,20 +45,8 @@ export default function Map({ activeFuels, onSelectPlant, selectedPlant, searchQ
 
       L.control.zoom({ position: "topright" }).addTo(map);
 
-      // Marker cluster group
-      const clusterGroup = L.markerClusterGroup({
-        showCoverageOnHover: false,
-        maxClusterRadius: 60,
-        iconCreateFunction: (cluster) => {
-          return L.icon({
-            iconUrl: clusterIcon(cluster.getChildCount()),
-            iconSize: [40, 40],
-            iconAnchor: [20, 20],
-          });
-        },
-      });
+      const layerGroup = L.layerGroup().addTo(map);
 
-      // Add all plant markers
       PLANTS.forEach((plant) => {
         const icon = L.icon({
           iconUrl: getIcon(plant.fuel),
@@ -87,12 +63,11 @@ export default function Map({ activeFuels, onSelectPlant, selectedPlant, searchQ
         );
 
         marker._plantData = plant;
-        clusterGroup.addLayer(marker);
+        layerGroup.addLayer(marker);
         markersRef.current[plant.id] = marker;
       });
 
-      map.addLayer(clusterGroup);
-      clusterGroupRef.current = clusterGroup;
+      layerGroupRef.current = layerGroup;
       mapInstanceRef.current = map;
     })();
 
@@ -107,11 +82,11 @@ export default function Map({ activeFuels, onSelectPlant, selectedPlant, searchQ
 
   // Filter by active fuels
   useEffect(() => {
-    if (!clusterGroupRef.current || !L) return;
-    clusterGroupRef.current.clearLayers();
+    if (!layerGroupRef.current || !L) return;
+    layerGroupRef.current.clearLayers();
     PLANTS.forEach((plant) => {
       if (activeFuels.has(plant.fuel)) {
-        clusterGroupRef.current.addLayer(markersRef.current[plant.id]);
+        layerGroupRef.current.addLayer(markersRef.current[plant.id]);
       }
     });
   }, [activeFuels]);
