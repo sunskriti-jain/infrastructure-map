@@ -2,6 +2,8 @@
 
 An interactive map of US power plants, transmission infrastructure, and energy data — built for students and citizens who want to understand the grid without paywalls.
 
+**Live demo:** [infrastructure-map-seven.vercel.app](https://infrastructure-map-seven.vercel.app/)
+
 ## Features
 
 - **150+ power plants** mapped across all fuel types (nuclear, coal, gas, solar, wind, hydro, geothermal)
